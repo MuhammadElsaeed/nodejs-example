@@ -30,11 +30,19 @@ app.use(express.json());
 // Routes
 app.use('/courses', courseRoutes);
 
+
 // Default route
 app.get('/', (req, res) => {
     res.write('Hello World!');
     res.end();
-    console.log('I am route handler /');
+});
+
+// Handle all other routes
+app.use((req, res) => {
+    res.status(404).json({
+        status: 'error',
+        message: 'Not Found',
+    });
 });
 
 // Start server
@@ -44,7 +52,10 @@ app.listen(3000, () => {
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).send('Something broke!');
+    res.status(500).json({
+        status: 'error',
+        message: 'Internal Server Error',
+    });
 });
 
 // Close connection at the end

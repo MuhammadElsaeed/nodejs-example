@@ -4,6 +4,7 @@ import Schema from './schema.js';
 
 import express from 'express';
 const router = express.Router();
+
 // Create a new course
 router.post('/', validationMiddleware(Schema), courseController.createCourse);
 

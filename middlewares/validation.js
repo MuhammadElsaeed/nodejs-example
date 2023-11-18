@@ -7,13 +7,12 @@ const middleware = (schema) => {
       next();
     } else {
       const { details } = error;
-      console.log("error", details);
       const message = details.map(errorEntry => {
         return { path: errorEntry.path, message: errorEntry.message }
       });
-
-      res.status(400).json({ error: message })
+      res.status(400).json({ status: "fail", data: { error: message } });
     }
   }
 }
+
 export default middleware;
