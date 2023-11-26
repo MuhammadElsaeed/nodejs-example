@@ -1,18 +1,27 @@
-const middleware = (schema) => {
-  return (req, res, next) => {
-    const { error } = schema.validate(req.body, { abortEarly: false });
-    const valid = error == null;
+const validationTypes = ["body", "params", "query"];
 
-    if (valid) {
+const validationMiddleware = (schema) => {
+  return (req, res, next) => {
+    const errors = {};
+
+    validationTypes.forEach(type => {
+      if (schema[type]) {
+        const { error } = schema[type].validate(req[type], { abortEarly: false });
+        if (error) {
+          errors[type] = error.details.map(errorEntry => {
+            return { path: errorEntry.path, message: errorEntry.message };
+          });
+        }
+      }
+    });
+
+    if (Object.keys(errors).length === 0) {
       next();
     } else {
-      const { details } = error;
-      const message = details.map(errorEntry => {
-        return { path: errorEntry.path, message: errorEntry.message }
-      });
-      res.status(400).json({ status: "fail", data: { error: message } });
+      res.status(400).json({ status: "fail", data: { error: errors } });
     }
-  }
-}
+  };
+};
 
-export default middleware;
+
+export default validationMiddleware;

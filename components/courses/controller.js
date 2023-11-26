@@ -24,7 +24,6 @@ async function createCourse(req, res) {
             data: savedCourse
         });
     } catch (error) {
-        console.log("Erorrr " + error.name);
         res.status(500).json({
             status: 'error',
             data: {
@@ -37,18 +36,17 @@ async function createCourse(req, res) {
 async function getCourseById(req, res) {
     try {
         const course = await Course.findById(req.params.id);
-        if (course) {
-            return res.status(200).json({
-                status: 'success',
-                data: { course: course }
+        if (!course) {
+            return res.status(404).json({
+                status: 'fail',
+                data: {
+                    message: 'Course not found'
+                }
             });
         }
-        res.status(404).json({
-            status: 'fail',
-            data: {
-                message: 'Course not found',
-                course: null
-            }
+        return res.status(200).json({
+            status: 'success',
+            data: { course: course }
         });
     } catch (error) {
         res.status(500).json({
@@ -61,7 +59,14 @@ async function getCourseById(req, res) {
 async function updateCourseById(req, res) {
     try {
         const course = await Course.findById(req.params.id);
-        if (!course) throw new Error('Course not found');
+        if (!course) {
+            return res.status(404).json({
+                status: 'fail',
+                data: {
+                    message: 'Course not found'
+                }
+            });
+        }
         Object.assign(course, req.body);
         const savedCourse = await course.save();
         res.status(200).json({
