@@ -1,8 +1,10 @@
 import Course from './model.js';
 
 async function getAllCourses(req, res) {
+    const { page, limit } = req.query
+    const skip = (page - 1) * limit
     try {
-        const courses = await Course.find();
+        const courses = await Course.find({}, { "__v": false }).skip(skip).limit(limit);
         res.status(200).json({
             status: 'success',
             data: { courses: courses }
