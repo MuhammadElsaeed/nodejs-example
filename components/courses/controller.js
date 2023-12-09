@@ -1,111 +1,61 @@
 import Course from './model.js';
+import asyncWrapper from '../../middlewares/asyncWrapper.js';
+import AppError from '../../utils/appError.js';
 
-async function getAllCourses(req, res) {
+const getAllCourses = asyncWrapper(async function (req, res) {
     const { page, limit } = req.query
     const skip = (page - 1) * limit
-    try {
-        const courses = await Course.find({}, { "__v": false }).skip(skip).limit(limit);
-        res.status(200).json({
-            status: 'success',
-            data: { courses: courses }
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            message: error.message
-        });
-    }
-}
+    const courses = await Course.find({}, { "__v": false }).skip(skip).limit(limit);
+    res.status(200).json({
+        status: 'success',
+        data: { courses: courses }
+    });
+});
 
-async function createCourse(req, res) {
-    try {
-        const course = new Course(req.body);
-        const savedCourse = await course.save();
-        res.status(201).json({
-            status: 'success',
-            data: savedCourse
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            data: {
-                message: error.message
-            }
-        });
-    }
-}
+const createCourse = asyncWrapper(async function (req, res) {
+    const course = new Course(req.body);
+    const savedCourse = await course.save();
+    res.status(201).json({
+        status: 'success',
+        data: savedCourse
+    });
+});
 
-async function getCourseById(req, res) {
-    try {
-        const course = await Course.findById(req.params.id);
-        if (!course) {
-            return res.status(404).json({
-                status: 'fail',
-                data: {
-                    message: 'Course not found'
-                }
-            });
-        }
-        return res.status(200).json({
-            status: 'success',
-            data: { course: course }
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            message: error.message
-        });
+const getCourseById = asyncWrapper(async function (req, res, next) {
+    const course = await Course.findById(req.params.id, { "__v": false });
+    if (!course) {
+        const error = new AppError('Course not found', 404);
+        return next(error);
     }
-}
+    return res.status(200).json({
+        status: 'success',
+        data: { course: course }
+    });
+});
 
-async function updateCourseById(req, res) {
-    try {
-        const course = await Course.findById(req.params.id);
-        if (!course) {
-            return res.status(404).json({
-                status: 'fail',
-                data: {
-                    message: 'Course not found'
-                }
-            });
-        }
-        Object.assign(course, req.body);
-        const savedCourse = await course.save();
-        res.status(200).json({
-            status: 'success',
-            data: { course: savedCourse }
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            data: {
-                message: error.message
-            }
-        });
-    }
-}
+const updateCourseById = asyncWrapper(async function (req, res, next) {
+    const { id } = req.params;
+    const { body } = req;
 
-async function deleteCourseById(req, res) {
-    try {
-        const course = await Course.findByIdAndDelete(req.params.id);
-        if (!course) {
-            return res.status(404).json({
-                status: 'fail',
-                data: {
-                    message: 'Course not found'
-                }
-            });
-        }
-        res.sendStatus(204);
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            data: {
-                message: error.message
-            }
-        });
+    const course = await Course.findByIdAndUpdate(id, body, { new: true }).select({ "-__v": false });
+    if (!course) {
+        const error = new AppError('Course not found', 404);
+        return next(error);
     }
-}
+    res.status(200).json({
+        status: 'success',
+        data: { course: course }
+    });
+});
+
+const deleteCourseById = asyncWrapper(async function (req, res, next) {
+    const course = await Course.findByIdAndDelete(req.params.id);
+    if (!course) {
+        const error = new AppError('Course not found', 404);
+        return next(error);
+    }
+    res.sendStatus(204);
+});
 
 const Controller = {
     getAllCourses,

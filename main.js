@@ -30,7 +30,6 @@ app.use(express.json());
 // Routes
 app.use('/courses', courseRoutes);
 
-
 // Default route
 app.get('/', (req, res) => {
     res.write('Hello World!');
@@ -50,11 +49,12 @@ app.listen(3000, () => {
     console.log('Example app listening on port 3000!');
 });
 
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        status: 'error',
-        message: 'Internal Server Error',
+app.use((error, req, res, next) => {
+    console.error(error.stack);
+    res.status(error.statusCode || 500).json({
+        status: error.statusText || 'error',
+        message: error.message,
+        data: null
     });
 });
 
