@@ -1,7 +1,8 @@
-import User from './model.js';
-import asyncWrapper from '../../middlewares/asyncWrapper.js';
-import AppError from '../../utils/appError.js';
 import bcrypt from 'bcrypt';
+import User from './model.js';
+import jwt from 'jsonwebtoken';
+import AppError from '../../utils/appError.js';
+import asyncWrapper from '../../middlewares/asyncWrapper.js';
 
 const getAllUsers = asyncWrapper(async function (req, res) {
     const { page, limit } = req.query
@@ -25,16 +26,15 @@ const loginUser = asyncWrapper(async function (req, res, next) {
         const error = new AppError('Invalid email or password', 401);
         return next(error);
     }
-
+    const token = jwt.sign(user.toObject({
+        transform: ({ _id, firstName, lastName, email }) => {
+            return { _id, firstName, lastName, email }
+        }
+    }), process.env.JWT_SECRET, { expiresIn: '1h' })
     res.status(200).json({
         status: 'success',
         data: {
-            message: 'Login successful',
-            user: user.toObject({
-                transform: ({ firstName, lastName, email }) => {
-                    return { firstName, lastName, email }
-                }
-            })
+            message: 'Login successful', token
         }
     });
 });
@@ -80,7 +80,7 @@ const getUserById = asyncWrapper(async function (req, res, next) {
 const updateUserById = asyncWrapper(async function (req, res, next) {
     const { id } = req.params;
     const { body } = req;
-
+    body.password = await bcrypt.hash(body.password, 10);
     // Check if the new email is already used by another user
     if (body.email) {
         const existingUser = await User.findOne({ email: body.email });

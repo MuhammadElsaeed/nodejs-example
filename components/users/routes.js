@@ -1,4 +1,6 @@
+import express from 'express';
 import userController from './controller.js';
+import verifyToken from '../../middlewares/verifyToken.js';
 import validationMiddleware from '../../middlewares/validation.js';
 import {
     getUserValidator,
@@ -8,7 +10,6 @@ import {
     createUserValidator
 } from './validator.js';
 
-import express from 'express';
 const router = express.Router();
 
 // Create a new user
@@ -17,15 +18,16 @@ router.post(['/register', '/'], validationMiddleware(createUserValidator), userC
 router.post('/login', validationMiddleware(loginValidator), userController.loginUser);
 
 // Retrieve all users
-router.get('/', userController.getAllUsers);
+
+router.get('/', verifyToken, userController.getAllUsers);
 
 // Retrieve a single user by id
-router.get('/:id', validationMiddleware(getUserValidator), userController.getUserById);
+router.get('/:id', verifyToken, validationMiddleware(getUserValidator), userController.getUserById);
 
 // Update a user by id
-router.put('/:id', validationMiddleware(updateUserValidator), userController.updateUserById);
+router.put('/:id', verifyToken, validationMiddleware(updateUserValidator), userController.updateUserById);
 
 // Delete a user by id
-router.delete('/:id', validationMiddleware(deleteUserValidator), userController.deleteUserById);
+router.delete('/:id', verifyToken, validationMiddleware(deleteUserValidator), userController.deleteUserById);
 
 export default router;
