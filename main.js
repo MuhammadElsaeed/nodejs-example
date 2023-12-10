@@ -1,8 +1,9 @@
 import express from 'express';
-import courseRoutes from './components/courses/routes.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import userRoutes from './components/users/routes.js';
+import courseRoutes from './components/courses/routes.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use(express.json());
 
 // Routes
 app.use('/courses', courseRoutes);
+app.use('/users', userRoutes);
 
 // Default route
 app.get('/', (req, res) => {
@@ -39,7 +41,7 @@ app.get('/', (req, res) => {
 // Handle all other routes
 app.use((req, res) => {
     res.status(404).json({
-        status: 'error',
+        status: 'fail',
         message: 'Not Found',
     });
 });
