@@ -1,6 +1,6 @@
 const validationTypes = ["body", "params", "query"];
 
-const validationMiddleware = (schema) => {
+export default (schema) => {
   return (req, res, next) => {
     const errors = {};
 
@@ -22,6 +22,3 @@ const validationMiddleware = (schema) => {
     }
   };
 };
-
-
-export default validationMiddleware;

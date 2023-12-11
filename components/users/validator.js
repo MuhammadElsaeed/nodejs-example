@@ -18,6 +18,7 @@ const schema = {
         lastName: Joi.string().required(),
         email: Joi.string().email().required(),
         password: Joi.string().required().min(8),
+        role: Joi.string().valid('USER', 'ADMIN', 'MODERATOR').default('USER')
     })
 };
 

@@ -1,4 +1,5 @@
 import courseController from './controller.js';
+import allowedTo from '../../middlewares/allowedTo.js';
 import verifyToken from '../../middlewares/verifyToken.js';
 import validationMiddleware from '../../middlewares/validation.js';
 import {
@@ -12,18 +13,18 @@ import express from 'express';
 const router = express.Router();
 
 // Create a new course
-router.post('/',verifyToken,  validationMiddleware(createCourseValidator), courseController.createCourse);
+router.post('/', verifyToken, validationMiddleware(createCourseValidator), courseController.createCourse);
 
 // Retrieve all courses
-router.get('/',verifyToken,  courseController.getAllCourses);
+router.get('/', verifyToken, courseController.getAllCourses);
 
 // Retrieve a single course by id
-router.get('/:id',verifyToken,  validationMiddleware(getCourseValidator), courseController.getCourseById);
+router.get('/:id', verifyToken, validationMiddleware(getCourseValidator), courseController.getCourseById);
 
 // Update a course by id
-router.put('/:id',verifyToken,  validationMiddleware(updateCourseValidator), courseController.updateCourseById);
+router.put('/:id', verifyToken, validationMiddleware(updateCourseValidator), courseController.updateCourseById);
 
 // Delete a course by id
-router.delete('/:id',verifyToken,  validationMiddleware(deleteCourseValidator), courseController.deleteCourseById);
+router.delete('/:id', verifyToken, allowedTo("ADMIN", "MODERATOR"), validationMiddleware(deleteCourseValidator), courseController.deleteCourseById);
 
 export default router;

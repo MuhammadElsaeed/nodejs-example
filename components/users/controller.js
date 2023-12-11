@@ -27,8 +27,8 @@ const loginUser = asyncWrapper(async function (req, res, next) {
         return next(error);
     }
     const token = jwt.sign(user.toObject({
-        transform: ({ _id, firstName, lastName, email }) => {
-            return { _id, firstName, lastName, email }
+        transform: ({ _id, firstName, lastName, email, role }) => {
+            return { _id, firstName, lastName, email, role }
         }
     }), process.env.JWT_SECRET, { expiresIn: '1h' })
     res.status(200).json({
@@ -42,7 +42,7 @@ const loginUser = asyncWrapper(async function (req, res, next) {
 
 
 const createUser = asyncWrapper(async function (req, res, next) {
-    const { firstName, lastName, password, email } = req.body;
+    const { firstName, lastName, password, email, role } = req.body;
 
     // Check if user with the same email already exists
     const existingUser = await User.findOne({ email });
@@ -56,13 +56,18 @@ const createUser = asyncWrapper(async function (req, res, next) {
         firstName,
         lastName,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        role
     });
     const savedUser = await user.save();
     res.status(201).json({
         status: 'success',
-        data: savedUser.toObject({ versionKey: false, password: false })
-    });
+        data: savedUser.toObject({
+            transform: ({ _id, firstName, lastName, email, role }) => {
+                return { _id, firstName, lastName, email, role }
+            }
+        })
+    })
 });
 
 const getUserById = asyncWrapper(async function (req, res, next) {
