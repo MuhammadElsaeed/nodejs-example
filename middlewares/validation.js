@@ -3,7 +3,6 @@ const validationTypes = ["body", "params", "query"];
 export default (schema) => {
   return (req, res, next) => {
     const errors = {};
-
     validationTypes.forEach(type => {
       if (schema[type]) {
         const { error } = schema[type].validate(req[type], { abortEarly: false });

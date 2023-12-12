@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
         enum: ['USER', 'ADMIN', 'MODERATOR'],
         default: 'USER'
     },
+    avatar: {
+        type: String,
+        default: 'avatar.png'
+    }
 });
 
 const User = mongoose.model('User', userSchema);

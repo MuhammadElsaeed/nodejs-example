@@ -29,6 +29,7 @@ process.on('SIGINT', () => {
 app.use(express.json());
 
 // Routes
+app.use("/static", express.static('public'));
 app.use('/courses', courseRoutes);
 app.use('/users', userRoutes);
 

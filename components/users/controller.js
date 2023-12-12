@@ -42,7 +42,7 @@ const loginUser = asyncWrapper(async function (req, res, next) {
 
 
 const createUser = asyncWrapper(async function (req, res, next) {
-    const { firstName, lastName, password, email, role } = req.body;
+    const { firstName, lastName, password, email, role} = req.body;
 
     // Check if user with the same email already exists
     const existingUser = await User.findOne({ email });
@@ -57,14 +57,15 @@ const createUser = asyncWrapper(async function (req, res, next) {
         lastName,
         email,
         password: hashedPassword,
-        role
+        role,
+        avatar: req.file ? req.file.filename : "avatar.png"
     });
     const savedUser = await user.save();
     res.status(201).json({
         status: 'success',
         data: savedUser.toObject({
-            transform: ({ _id, firstName, lastName, email, role }) => {
-                return { _id, firstName, lastName, email, role }
+            transform: ({ _id, firstName, lastName, email, role, avatar }) => {
+                return { _id, firstName, lastName, email, role, avatar }
             }
         })
     })
@@ -88,13 +89,13 @@ const updateUserById = asyncWrapper(async function (req, res, next) {
     body.password = await bcrypt.hash(body.password, 10);
     // Check if the new email is already used by another user
     if (body.email) {
-        const existingUser = await User.findOne({ email: body.email });
+        var existingUser = await User.findOne({ email: body.email });
         if (existingUser && existingUser._id.toString() !== id) {
             const error = new AppError('Email is already used by another user', 400);
             return next(error);
         }
     }
-
+    body.avatar = req.file ? req.file.filename : existingUser.avatar;
     const user = await User.findByIdAndUpdate(id, body, { new: true })
         .select({ "-__v": false, password: false });
     if (!user) {
